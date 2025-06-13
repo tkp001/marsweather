@@ -1,0 +1,50 @@
+// include the library code:
+#include <LiquidCrystal.h>
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
+// initialize the library by associating any needed LCD interface pin
+// with the arduino pin number it is connected to
+RF24 radio(7, 6); // CE, CSN
+const int rs = 8, en = 9, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+const byte address[6] = "00001";
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+
+void setup() {
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  lcd.display();
+  // Print a message to the LCD.
+  lcd.print("RESET");
+  
+  Serial.begin(9600);
+  radio.begin();
+  radio.openReadingPipe(0, address);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.startListening();
+
+}
+
+void loop() {
+  lcd.clear();
+  
+    if (radio.available()) {
+    char text[32] = "";
+    lcd.clear();
+    lcd.setCursor(0,0);
+    radio.read(&text, sizeof(text));
+    lcd.print(text);
+    Serial.println(text);
+    lcd.setCursor(0,1);
+    
+    if (radio.available()) {
+      char text[32] = "";
+      radio.read(&text, sizeof(text));
+      lcd.print(text);
+      Serial.println(text);
+    delay(1000);
+    }
+  }
+}
